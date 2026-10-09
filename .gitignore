@@ -10,6 +10,9 @@ docs/.vitepress/cache/
 # 本机部署配置（前缀、对外域名）
 site.json
 
+# 个人文档的版本记录（单独的 git 仓库，见 npm run content）
+.content.git/
+
 # 个人文档不进仓库：只保留站点骨架（各分类 index.md）和站点图标
 docs/**/*.md
 !docs/**/index.md

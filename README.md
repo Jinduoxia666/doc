@@ -20,6 +20,7 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 | `npm run new -- backend/xxx "标题"` | 按模板新建文档 |
 | `npm run passwd -- <新密码>` | 设置登录密码，改后所有已登录会话失效 |
 | `npm run share:list` | 列出所有分享的链接和密码（需文档站在运行） |
+| `npm run content -- <init\|commit\|status\|log\|diff\|install\|uninstall>` | 文档内容的版本记录，见下方「文档版本记录」 |
 | `npm run tunnel -- <start\|stop\|restart\|status\|log>` | 管理 launchd 托管的 Cloudflare Tunnel（macOS，可选） |
 
 ## 本机配置 `site.json`
@@ -30,6 +31,8 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 |---|---|
 | `base` | 整站路径前缀，如 `/dp`，默认 `/dp`。同一域名可按前缀分给不同的人反代到各自主机，访问不带前缀的路径会 302 跳到前缀下 |
 | `origin` | 分享链接使用的域名，如 `http://doc.example.com`；不填则用访问时的域名 |
+| `contentLabel` | 文档每日提交的 launchd 服务名，默认 `local.doc-daily-commit` |
+| `contentCommitAt` | 每日提交时间，默认 `23:30`，改后需重新 `npm run content -- install` |
 | `tunnelLabel` | Cloudflare Tunnel 的 launchd 服务名，plist 位于 `~/Library/LaunchAgents/<tunnelLabel>.plist`；不用 Tunnel 可不填 |
 
 修改后需重启服务。
@@ -41,6 +44,24 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 图片放 `docs/public/`，用 `/xxx.png` 引用；或与文档同目录用相对路径引用。
 
 个人文档不进仓库：`.gitignore` 忽略 `docs/` 下除各分类 `index.md` 外的所有 Markdown 和 `docs/public/` 下除站点图标外的文件。
+
+## 文档版本记录
+
+个人文档由单独的 git 仓库 `.content.git` 记录（工作区为 `docs/`，忽略 `.vitepress/`），与主仓库互不影响，`.content.git` 本身已 gitignore。
+
+```bash
+npm run content -- init              # 首次：建库并提交现有文档
+npm run content -- install           # 安装 launchd 定时任务，每天定时提交一次（有改动才提交）
+npm run content -- commit ["说明"]    # 手动立即提交
+npm run content -- log [projects/wrzy.md]   # 查看全部或某篇的历史
+npm run content -- diff [提交] [文件]  # 查看改动，默认对比上次提交与工作区
+npm run content -- uninstall         # 卸载定时任务
+```
+
+- 定时任务的 plist 在 `~/Library/LaunchAgents/<contentLabel>.plist`，日志在 `~/Library/Logs/doc-daily-commit.log`；Mac 在提交时间处于睡眠时，唤醒后补跑
+- plist 里写的是安装时 node 的绝对路径，升级或切换 node 版本后需重新 `install`
+- 需要异地备份时，给它加一个**私有**远程仓库，之后每次提交会自动推送：`git --git-dir=.content.git remote add origin <地址>`
+- 回滚某篇：`git --git-dir=.content.git --work-tree=docs checkout <提交> -- projects/wrzy.md`
 
 ## 通过 nginx 反代对外访问
 
