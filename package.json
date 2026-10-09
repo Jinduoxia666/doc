@@ -1,0 +1,18 @@
+{
+  "name": "dev-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "node scripts/serve.mjs",
+    "serve": "vitepress build docs && node scripts/serve.mjs",
+    "new": "node scripts/new.mjs",
+    "tunnel": "node scripts/tunnel.mjs",
+    "share:list": "curl -s localhost:7788/dp/__share/api/shares | node -e \"for (const s of JSON.parse(require('fs').readFileSync(0))) console.log(s.path, s.url, s.password)\"",
+    "passwd": "node scripts/passwd.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}

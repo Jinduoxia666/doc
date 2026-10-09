@@ -1,0 +1,5 @@
+/* 文档里用 {.unresolved} 标记未解决事项 */
+.unresolved,
+.unresolved strong {
+  color: var(--vp-c-danger-1);
+}

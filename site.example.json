@@ -1,0 +1,5 @@
+{
+  "base": "/dp",
+  "origin": "http://doc.example.com",
+  "tunnelLabel": "com.example.doc-tunnel"
+}

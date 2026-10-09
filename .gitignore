@@ -1,0 +1,19 @@
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+.DS_Store
+# 分享密码与签名密钥
+.shares.json
+.shares.json.tmp
+.auth.json
+
+# 本机部署配置（前缀、对外域名）
+site.json
+
+# 个人文档不进仓库：只保留站点骨架（各分类 index.md）和站点图标
+docs/**/*.md
+!docs/**/index.md
+docs/public/*
+!docs/public/favicon.ico
+!docs/public/favicon.svg
+!docs/public/apple-touch-icon.png
