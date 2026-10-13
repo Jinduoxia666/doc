@@ -9,6 +9,7 @@ export const sections: Record<string, string> = {
   frontend: '前端对接',
   solutions: '方案',
   ops: '运维部署',
+  scripts: '脚本工具',
   others: '其他',
 }
 

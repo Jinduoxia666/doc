@@ -23,6 +23,9 @@ features:
   - title: 运维部署
     details: 服务器、Docker、流水线
     link: /ops/
+  - title: 脚本工具
+    details: 油猴脚本等小工具的安装与使用
+    link: /scripts/
   - title: 其他
     details: 常用命令、代码片段与杂项
     link: /others/
