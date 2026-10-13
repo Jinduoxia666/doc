@@ -85,7 +85,7 @@ function requestOrigin(req) {
 
 function shareInfo(req, docPath, s) {
   const origin = SHARE_ORIGIN || requestOrigin(req)
-  return { shared: true, path: docPath, id: s.id, password: s.password, url: `${origin}${BASE}/s/${s.id}`, createdAt: s.createdAt }
+  return { shared: true, path: docPath, id: s.id, password: s.password, public: !!s.public, url: `${origin}${BASE}/s/${s.id}`, createdAt: s.createdAt }
 }
 
 // 只允许 docs 目录内已存在的 .md 文件
@@ -231,6 +231,13 @@ async function handleApi(req, res, url) {
     save(data)
     return json(res, 200, shareInfo(req, docPath, existing))
   }
+  // 公开分享：拿到链接即可查看，不用输密码（如给同事看的工具使用说明）
+  if (route === '/shares/public' && req.method === 'POST') {
+    if (!existing) return json(res, 404, { error: '尚未分享' })
+    existing.public = !!body.public
+    save(data)
+    return json(res, 200, shareInfo(req, docPath, existing))
+  }
   if (route === '/shares' && req.method === 'DELETE') {
     delete data.shares[docPath]
     save(data)
@@ -249,6 +256,8 @@ async function handleShare(req, res, id) {
   const token = sign(data.secret, id, share.password)
   const doc = await renderDoc(abs)
   const { title } = doc
+
+  if (share.public) return req.method === 'POST' ? send(res, 303, '', { Location: `${BASE}/s/${id}` }) : send(res, 200, docPage(doc))
 
   if (req.method === 'POST') {
     const key = `${clientIp(req)}|${id}`
@@ -270,6 +279,8 @@ async function handleShare(req, res, id) {
 }
 
 const PUBLIC_FILES = { '/favicon.svg': 'image/svg+xml', '/favicon.ico': 'image/x-icon', '/apple-touch-icon.png': 'image/png' }
+// 油猴脚本免登录：同事安装和 Tampermonkey 定时检查更新都拿不到站点登录态
+const PUBLIC_SCRIPT = /^\/userscripts\/[A-Za-z0-9_-]+\.user\.js$/
 
 function siteLoginPage(error) {
   return page(
@@ -339,7 +350,7 @@ async function middleware(req, res, next) {
     if (mode === 'login') {
       if (pathname === '/__login') return await handleLogin(req, res, url)
       if (pathname === '/__logout') return send(res, 303, '', { Location: `${BASE}/__login`, 'Set-Cookie': clearSessionCookie() })
-      if (!PUBLIC_FILES[pathname] && !isLoggedIn(parseCookies(req)[SESSION_COOKIE])) {
+      if (!PUBLIC_FILES[pathname] && !PUBLIC_SCRIPT.test(pathname) && !isLoggedIn(parseCookies(req)[SESSION_COOKIE])) {
         const wantsPage = req.method === 'GET' && (req.headers.accept || '').includes('text/html')
         if (wantsPage) return send(res, 302, '', { Location: `${BASE}/__login?next=${encodeURIComponent(url.pathname + url.search)}` })
         return json(res, 401, { error: '未登录' })

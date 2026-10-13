@@ -6,6 +6,7 @@ interface Share {
   shared: boolean
   url?: string
   password?: string
+  public?: boolean
 }
 
 const API = withBase('/__share/api/shares')
@@ -38,6 +39,7 @@ const path = () => page.value.relativePath
 const load = () => call('GET', `${API}?path=${encodeURIComponent(path())}`)
 const create = () => call('POST', API, { path: path() })
 const reset = () => confirm('重置后旧密码立即失效，已登录的人需要重新输入。确定？') && call('POST', `${API}/reset`, { path: path() })
+const setPublic = (on: boolean) => (!on || confirm('公开后拿到链接的人都能直接查看，不用输密码。确定？')) && call('POST', `${API}/public`, { path: path(), public: on })
 const revoke = () => confirm('取消分享后链接将失效。确定？') && call('DELETE', `${API}?path=${encodeURIComponent(path())}`)
 
 // navigator.clipboard 只在 HTTPS / localhost 下可用，通过 http 域名访问时退回 execCommand
@@ -90,10 +92,12 @@ watch(() => page.value.relativePath, () => {
       <p v-if="error" class="share-error">{{ error }}</p>
       <template v-else-if="share?.shared">
         <div class="row"><span>链接</span><code>{{ share.url }}</code><button @click="copy('url', share.url!)">{{ copied === 'url' ? '已复制' : '复制' }}</button></div>
-        <div class="row"><span>密码</span><code>{{ share.password }}</code><button @click="copy('pw', share.password!)">{{ copied === 'pw' ? '已复制' : '复制' }}</button></div>
+        <div v-if="share.public" class="row"><span>密码</span><span class="muted">公开，无需密码</span></div>
+        <div v-else class="row"><span>密码</span><code>{{ share.password }}</code><button @click="copy('pw', share.password!)">{{ copied === 'pw' ? '已复制' : '复制' }}</button></div>
         <div class="row actions">
-          <button @click="copy('all', `${share.url}\n访问密码：${share.password}`)">{{ copied === 'all' ? '已复制' : '复制链接和密码' }}</button>
-          <button :disabled="busy" @click="reset">重置密码</button>
+          <button v-if="!share.public" @click="copy('all', `${share.url}\n访问密码：${share.password}`)">{{ copied === 'all' ? '已复制' : '复制链接和密码' }}</button>
+          <button v-if="!share.public" :disabled="busy" @click="reset">重置密码</button>
+          <button :disabled="busy" @click="setPublic(!share.public)">{{ share.public ? '恢复密码访问' : '设为公开' }}</button>
           <button :disabled="busy" class="danger" @click="revoke">取消分享</button>
         </div>
       </template>
@@ -119,6 +123,7 @@ watch(() => page.value.relativePath, () => {
 .actions { flex-wrap: wrap; margin: 12px 0 0; }
 .primary { background: var(--vp-c-brand-3); color: var(--vp-c-white); border-color: transparent; padding: 4px 14px; }
 .danger:hover { color: var(--vp-c-danger-1) !important; border-color: var(--vp-c-danger-1) !important; }
+.muted { flex: 1; color: var(--vp-c-text-2); }
 .hint { margin: 0 0 12px; color: var(--vp-c-text-2); }
 .share-error { margin: 0; color: var(--vp-c-danger-1); }
 button:disabled { opacity: .5; cursor: not-allowed; }
