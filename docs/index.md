@@ -5,28 +5,25 @@ hero:
   tagline: 记录、沉淀、随时查阅
   actions:
     - theme: brand
-      text: 后端
-      link: /backend/
+      text: 项目文档
+      link: /projects/
     - theme: alt
-      text: 运维部署
-      link: /ops/
+      text: 前端对接
+      link: /frontend/
 features:
   - title: 项目文档
-    details: 项目需求与技术方案
+    details: 项目需求与开发文档
     link: /projects/
-  - title: 后端
-    details: Java、Spring、中间件
-    link: /backend/
-  - title: 前端
-    details: 框架、工程化、样式
+  - title: 前端对接
+    details: 接口说明与联调约定
     link: /frontend/
+  - title: 方案
+    details: 技术方案与设计
+    link: /solutions/
   - title: 运维部署
     details: 服务器、Docker、流水线
     link: /ops/
-  - title: 数据库
-    details: MySQL、Redis、SQL 优化
-    link: /database/
-  - title: 代码片段
-    details: 常用命令与代码片段
-    link: /snippets/
+  - title: 其他
+    details: 常用命令、代码片段与杂项
+    link: /others/
 ---

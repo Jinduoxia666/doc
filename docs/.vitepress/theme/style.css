@@ -3,3 +3,28 @@
 .unresolved strong {
   color: var(--vp-c-danger-1);
 }
+
+/* 侧边栏分类标题加大，和下面的文档条目拉开层级 */
+.VPSidebarItem.level-0 > .item > .link > .text,
+.VPSidebarItem.level-0 > .item > .text {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.VPSidebarItem.level-0 > .items {
+  margin-top: 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--vp-c-divider);
+}
+
+/* 侧边栏文档标题只显示一行，超出部分省略 */
+.VPSidebarItem:not(.level-0) > .item > .link {
+  min-width: 0;
+}
+
+.VPSidebarItem:not(.level-0) > .item > .link > .text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

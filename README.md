@@ -17,7 +17,7 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 |---|---|
 | `npm run dev` | 开发模式，改动实时生效（端口 7788） |
 | `npm run serve` | 构建后以静态方式运行（同样是 7788，更快更稳） |
-| `npm run new -- backend/xxx "标题"` | 按模板新建文档 |
+| `npm run new -- solutions/xxx "标题"` | 按模板新建文档 |
 | `npm run passwd -- <新密码>` | 设置登录密码，改后所有已登录会话失效 |
 | `npm run share:list` | 列出所有分享的链接和密码（需文档站在运行） |
 | `npm run content -- <init\|commit\|status\|log\|diff\|install\|uninstall>` | 文档内容的版本记录，见下方「文档版本记录」 |

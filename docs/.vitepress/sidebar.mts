@@ -6,11 +6,10 @@ const DOCS_ROOT = path.resolve(__dirname, '..')
 // 分类目录 -> 显示名称，顺序即导航/侧边栏顺序
 export const sections: Record<string, string> = {
   projects: '项目文档',
-  backend: '后端',
-  frontend: '前端',
+  frontend: '前端对接',
+  solutions: '方案',
   ops: '运维部署',
-  database: '数据库',
-  snippets: '代码片段',
+  others: '其他',
 }
 
 // 标题优先级：frontmatter title > 第一个一级标题 > 文件名
@@ -21,6 +20,15 @@ function readTitle(file: string): string {
   if (fmTitle) return fmTitle
   const h1 = content.match(/^#\s+(.+)$/m)?.[1]
   return h1?.trim() || path.basename(file, '.md')
+}
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+// 侧边栏标题单行省略（见 theme/style.css），悬停时用 title 显示完整标题
+function withTooltip(title: string): string {
+  const t = escapeHtml(title)
+  return `<span title="${t}">${t}</span>`
 }
 
 function walk(dir: string, urlBase: string): any[] {
@@ -35,7 +43,7 @@ function walk(dir: string, urlBase: string): any[] {
       const children = walk(full, `${urlBase}${e.name}/`)
       if (children.length) items.push({ text: e.name, collapsed: true, items: children })
     } else if (e.name.endsWith('.md') && e.name !== 'index.md') {
-      items.push({ text: readTitle(full), link: `${urlBase}${e.name.replace(/\.md$/, '')}` })
+      items.push({ text: withTooltip(readTitle(full)), link: `${urlBase}${e.name.replace(/\.md$/, '')}` })
     }
   }
   return items

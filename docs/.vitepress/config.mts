@@ -1,9 +1,42 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import type { Plugin } from 'vite'
 import { defineConfig } from 'vitepress'
-import { buildNav, buildSidebar } from './sidebar.mts'
+import { buildNav, buildSidebar, sections } from './sidebar.mts'
 import { BASE, sharePlugin } from './share.mjs'
 
 // dev 和 preview 固定同一端口，Cloudflare Tunnel 只需指向 http://localhost:7788
 const PORT = 7788
+
+// 侧边栏只在加载配置时生成一次，新增/删除文档后不会刷新。
+// 监听分类目录下 .md 和子目录的增删，touch sidebar.mts 让 VitePress 重新加载配置
+function sidebarReloadPlugin(): Plugin {
+  const docsRoot = path.resolve(__dirname, '..')
+  const sidebarFile = path.join(__dirname, 'sidebar.mts')
+  const dirs = Object.keys(sections).map((d) => path.join(docsRoot, d) + path.sep)
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  return {
+    name: 'sidebar-reload',
+    apply: 'serve',
+    configureServer(server) {
+      const onChange = (file: string, isDir: boolean) => {
+        if (!isDir && !file.endsWith('.md')) return
+        if (!dirs.some((d) => file.startsWith(d))) return
+        // 批量增删（如 git checkout）合并成一次重载
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+          const now = new Date()
+          fs.utimesSync(sidebarFile, now, now)
+        }, 300)
+      }
+      server.watcher.on('add', (f) => onChange(f, false))
+      server.watcher.on('unlink', (f) => onChange(f, false))
+      server.watcher.on('addDir', (f) => onChange(f, true))
+      server.watcher.on('unlinkDir', (f) => onChange(f, true))
+    },
+  }
+}
 
 export default defineConfig({
   base: `${BASE}/`,
@@ -49,6 +82,6 @@ export default defineConfig({
     // 通过 Tunnel 访问时 Host 是公网域名，需放行；可改成具体域名如 ['doc.example.com']
     // 监听所有网卡供外部 nginx 反代；非本机请求只能访问分享页（见 share.mjs）
     server: { host: '0.0.0.0', port: PORT, strictPort: true, allowedHosts: true },
-    plugins: [sharePlugin()],
+    plugins: [sharePlugin(), sidebarReloadPlugin()],
   },
 })

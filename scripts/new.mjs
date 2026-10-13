@@ -1,5 +1,5 @@
 // 用法：npm run new -- <分类目录>/<文件名> [标题]
-// 例如：npm run new -- backend/spring-transaction "Spring 事务传播"
+// 例如：npm run new -- solutions/order-idempotent "订单幂等方案"
 import fs from 'node:fs'
 import path from 'node:path'
 
