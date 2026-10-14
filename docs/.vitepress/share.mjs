@@ -27,7 +27,7 @@ export const BASE = SITE.base || '/dp'
 if (!/^\/[a-z0-9-]+$/.test(BASE)) throw new Error(`site.json 的 base 格式应为 /xxx（小写字母、数字、-），当前：${BASE}`)
 // 访问模式（Host 头可伪造，所以免登录还要求连接来自本机）：
 //   local —— 本机直接访问 localhost：完整站点，免登录（本地开发）
-//   login —— 其他一切（Tunnel、外部 nginx、局域网直连）：需要登录
+//   login —— 其他一切（外部 nginx、局域网直连）：需要登录
 // 分享页 /s/<id> 在任何模式下都只凭该文档的分享密码访问，不需要登录。
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1'])
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])

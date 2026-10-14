@@ -1,6 +1,6 @@
 # 开发文档
 
-基于 [VitePress](https://vitepress.dev) 的个人开发文档站，在本机运行，通过反向代理（nginx 或 Cloudflare Tunnel）对外访问，带站点登录和按文档密码分享。
+基于 [VitePress](https://vitepress.dev) 的个人开发文档站，在本机运行，通过 nginx 反向代理对外访问，带站点登录和按文档密码分享。
 
 ## 快速开始
 
@@ -21,7 +21,6 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 | `npm run passwd -- <新密码>` | 设置登录密码，改后所有已登录会话失效 |
 | `npm run share:list` | 列出所有分享的链接和密码（需文档站在运行） |
 | `npm run content -- <init\|commit\|status\|log\|diff\|install\|uninstall>` | 文档内容的版本记录，见下方「文档版本记录」 |
-| `npm run tunnel -- <start\|stop\|restart\|status\|log>` | 管理 launchd 托管的 Cloudflare Tunnel（macOS，可选） |
 
 ## 本机配置 `site.json`
 
@@ -33,7 +32,6 @@ npm run dev                       # 打开 http://localhost:7788/<base>/
 | `origin` | 分享链接使用的域名，如 `http://doc.example.com`；不填则用访问时的域名 |
 | `contentLabel` | 文档每日提交的 launchd 服务名，默认 `local.doc-daily-commit` |
 | `contentCommitAt` | 每日提交时间，默认 `23:30`，改后需重新 `npm run content -- install` |
-| `tunnelLabel` | Cloudflare Tunnel 的 launchd 服务名，plist 位于 `~/Library/LaunchAgents/<tunnelLabel>.plist`；不用 Tunnel 可不填 |
 
 修改后需重启服务。
 

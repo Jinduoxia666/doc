@@ -5,7 +5,7 @@ import { defineConfig } from 'vitepress'
 import { buildNav, buildSidebar, sections } from './sidebar.mts'
 import { BASE, sharePlugin } from './share.mjs'
 
-// dev 和 preview 固定同一端口，Cloudflare Tunnel 只需指向 http://localhost:7788
+// dev 和 preview 固定同一端口，nginx 只需反代到 http://localhost:7788
 const PORT = 7788
 
 // 侧边栏只在加载配置时生成一次，新增/删除文档后不会刷新。
@@ -79,7 +79,7 @@ export default defineConfig({
   },
 
   vite: {
-    // 通过 Tunnel 访问时 Host 是公网域名，需放行；可改成具体域名如 ['doc.example.com']
+    // 经 nginx 反代访问时 Host 是公网域名，需放行；可改成具体域名如 ['doc.example.com']
     // 监听所有网卡供外部 nginx 反代；非本机请求只能访问分享页（见 share.mjs）
     server: { host: '0.0.0.0', port: PORT, strictPort: true, allowedHosts: true },
     plugins: [sharePlugin(), sidebarReloadPlugin()],
