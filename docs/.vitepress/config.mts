@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitepress'
@@ -8,11 +7,11 @@ import { BASE, sharePlugin } from './share.mjs'
 // dev 和 preview 固定同一端口，nginx 只需反代到 http://localhost:7788
 const PORT = 7788
 
-// 侧边栏只在加载配置时生成一次，新增/删除文档后不会刷新。
-// 监听分类目录下 .md 和子目录的增删，touch sidebar.mts 让 VitePress 重新加载配置
+// 侧边栏只在加载配置时生成一次，新增/删除文档、改标题后不会刷新。
+// 监听分类目录下 .md 和子目录的变化，重新生成侧边栏写回站点配置，再热更新 /@siteData。
+// 不要 touch sidebar.mts：它是配置依赖，VitePress 会整个重启 dev server，重启期间端口断开，nginx 返回 502/503
 function sidebarReloadPlugin(): Plugin {
   const docsRoot = path.resolve(__dirname, '..')
-  const sidebarFile = path.join(__dirname, 'sidebar.mts')
   const dirs = Object.keys(sections).map((d) => path.join(docsRoot, d) + path.sep)
   let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -20,18 +19,30 @@ function sidebarReloadPlugin(): Plugin {
     name: 'sidebar-reload',
     apply: 'serve',
     configureServer(server) {
+      const site = (server.config as any).vitepress.site
+      let last = JSON.stringify(site.themeConfig.sidebar)
+
+      const refresh = () => {
+        const sidebar = buildSidebar()
+        const next = JSON.stringify(sidebar)
+        // 只改正文不影响侧边栏时不推送
+        if (next === last) return
+        last = next
+        site.themeConfig.sidebar = sidebar
+        const mod = server.moduleGraph.getModuleById('/@siteData')
+        if (mod) server.reloadModule(mod)
+      }
+
       const onChange = (file: string, isDir: boolean) => {
         if (!isDir && !file.endsWith('.md')) return
         if (!dirs.some((d) => file.startsWith(d))) return
-        // 批量增删（如 git checkout）合并成一次重载
+        // 批量增删（如 git checkout）合并成一次刷新
         clearTimeout(timer)
-        timer = setTimeout(() => {
-          const now = new Date()
-          fs.utimesSync(sidebarFile, now, now)
-        }, 300)
+        timer = setTimeout(refresh, 300)
       }
       server.watcher.on('add', (f) => onChange(f, false))
       server.watcher.on('unlink', (f) => onChange(f, false))
+      server.watcher.on('change', (f) => onChange(f, false))
       server.watcher.on('addDir', (f) => onChange(f, true))
       server.watcher.on('unlinkDir', (f) => onChange(f, true))
     },
@@ -85,3 +96,4 @@ export default defineConfig({
     plugins: [sharePlugin(), sidebarReloadPlugin()],
   },
 })
+
