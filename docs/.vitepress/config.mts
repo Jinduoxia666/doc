@@ -64,6 +64,20 @@ export default defineConfig({
     ['link', { rel: 'apple-touch-icon', href: `${BASE}/apple-touch-icon.png` }],
   ],
 
+  // ```mermaid 代码块交给 theme/Mermaid.vue 在浏览器端渲染
+  markdown: {
+    config(md) {
+      const fence = md.renderer.rules.fence!
+      md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        if (token.info.trim() === 'mermaid') {
+          return `<Mermaid code="${encodeURIComponent(token.content)}" />`
+        }
+        return fence(tokens, idx, options, env, self)
+      }
+    },
+  },
+
   themeConfig: {
     logo: '/favicon.svg',
     nav: buildNav(),

@@ -132,14 +132,57 @@ function renderer() {
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
+// 分享页的访客没有站点登录态，拿不到 public 下的静态资源，把文档引用的图片内联成 data URI
+const PUBLIC = path.join(DOCS, 'public')
+const IMAGE_TYPES = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp' }
+const MAX_INLINE_IMAGE = 2 * 1024 * 1024
+
+function inlineImages(html) {
+  return html.replace(/(<img\b[^>]*?\bsrc=")([^"]+)(")/g, (all, pre, src, post) => {
+    if (!src.startsWith('/')) return all
+    const rel = decodeURIComponent((src.startsWith(`${BASE}/`) ? src.slice(BASE.length) : src).split(/[?#]/)[0])
+    const abs = path.resolve(PUBLIC, `.${rel}`)
+    const type = IMAGE_TYPES[path.extname(abs).toLowerCase()]
+    if (!type || !abs.startsWith(PUBLIC + path.sep) || !fs.existsSync(abs)) return all
+    const buf = fs.readFileSync(abs)
+    if (buf.length > MAX_INLINE_IMAGE) return all
+    return `${pre}data:${type};base64,${buf.toString('base64')}${post}`
+  })
+}
+
+// 从渲染结果里取 h2 / h3 生成本页目录（标题文本已是转义后的 HTML）
+function buildToc(html) {
+  const items = []
+  for (const m of html.matchAll(/<h([23]) id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g)) {
+    const text = m[3].replace(/<a class="header-anchor"[\s\S]*?<\/a>/g, '').replace(/<[^>]+>/g, '').trim()
+    if (text) items.push({ level: Number(m[1]), id: m[2], text })
+  }
+  return items
+}
+
+// ```mermaid 代码块先换成占位段落，渲染后再替换成待前端绘制的容器（源码放 data-code）
+const MERMAID_FENCE = /^```mermaid\r?\n([\s\S]*?)^```[ \t]*$/gm
+const MERMAID_JS = path.join(ROOT, 'node_modules/mermaid/dist/mermaid.min.js')
+
+function extractMermaid(body) {
+  const blocks = []
+  const text = body.replace(MERMAID_FENCE, (_, code) => `MERMAIDBLOCK${blocks.push(code) - 1}\n`)
+  return { text, blocks }
+}
+
+function restoreMermaid(html, blocks) {
+  return html.replace(/<p>MERMAIDBLOCK(\d+)<\/p>/g, (_, i) => `<div class="mermaid-block" data-code="${encodeURIComponent(blocks[i])}"></div>`)
+}
+
 async function renderDoc(abs) {
   const raw = fs.readFileSync(abs, 'utf-8')
   const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
   const fmTitle = raw.match(/^---\r?\n[\s\S]*?^title:\s*['"]?(.+?)['"]?\s*$/m)?.[1]
   const title = fmTitle || body.match(/^#\s+(.+)$/m)?.[1]?.trim() || path.basename(abs, '.md')
   const md = await renderer()
-  const html = md.render(body, { path: abs, relativePath: path.relative(DOCS, abs), cleanUrls: true })
-  return { title, html }
+  const { text, blocks } = extractMermaid(body)
+  const html = restoreMermaid(inlineImages(md.render(text, { path: abs, relativePath: path.relative(DOCS, abs), cleanUrls: true })), blocks)
+  return { title, html, toc: buildToc(html), mermaid: blocks.length > 0 }
 }
 
 function page(title, content) {
@@ -173,11 +216,34 @@ function loginPage(title, error) {
   )
 }
 
-function docPage({ title, html }) {
+// 分享页访客拿不到站点前端资源，mermaid 走免登录的 /__share/mermaid.min.js
+function mermaidScript() {
+  return `<script src="${BASE}/__share/mermaid.min.js"></script>
+<script>
+(async () => {
+  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' })
+  let n = 0
+  for (const el of document.querySelectorAll('.mermaid-block[data-code]')) {
+    try {
+      el.innerHTML = (await mermaid.render('mermaid-' + n++, decodeURIComponent(el.dataset.code))).svg
+    } catch (e) {
+      el.textContent = String(e)
+    }
+  }
+})()
+</script>`
+}
+
+function docPage({ title, html, toc, mermaid }) {
+  const list = toc.map((t) => `<li class="l${t.level}"><a href="#${t.id}">${t.text}</a></li>`).join('')
+  const nav = toc.length >= 2
+    ? `<details class="toc-m"><summary>本页目录</summary><ul>${list}</ul></details>`
+    : ''
+  const aside = toc.length >= 2 ? `<nav class="toc"><div class="toc-title">本页目录</div><ul>${list}</ul></nav>` : ''
   return page(
     title,
     `<header class="bar"><img src="${BASE}/favicon.svg" alt="" width="24" height="24"><span>${esc(title)}</span><span class="tag">分享文档</span></header>
-<main class="doc">${html}</main>`,
+<div class="layout"><main class="doc">${nav}${html}</main>${aside}</div>${mermaid ? mermaidScript() : ''}`,
   )
 }
 
@@ -344,6 +410,11 @@ async function middleware(req, res, next) {
     }
     const pathname = url.pathname.slice(BASE.length) || '/'
     const mode = accessMode(req)
+    // 开源库文件，不含文档内容，分享页访客免登录可取
+    if (pathname === '/__share/mermaid.min.js' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=86400' })
+      return void fs.createReadStream(MERMAID_JS).pipe(res)
+    }
     const m = pathname.match(/^\/s\/([A-Za-z0-9_-]{4,32})\/?$/)
     if (m && (req.method === 'GET' || req.method === 'POST')) return await handleShare(req, res, m[1])
 
@@ -410,4 +481,23 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,B
 .doc .custom-block{border-radius:8px;padding:12px 16px;margin:16px 0;background:var(--soft)}
 .doc .custom-block-title{font-weight:600;margin:0}
 .doc img{max-width:100%}
+.doc .mermaid-block{margin:16px 0;overflow-x:auto;text-align:center}
+.doc .mermaid-block foreignObject p,.doc .mermaid-block foreignObject div,.doc .mermaid-block foreignObject span{margin:0;line-height:1.5}
+.doc [id]{scroll-margin-top:64px}
+.layout{max-width:1200px;margin:0 auto}
+.toc{display:none}
+.toc-m{margin:0 0 16px;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+.toc-m summary{cursor:pointer;font-weight:600}
+.toc ul,.toc-m ul{list-style:none;margin:6px 0 0;padding:0}
+.toc li,.toc-m li{margin:4px 0;line-height:1.5}
+.toc li.l3,.toc-m li.l3{padding-left:14px}
+.toc a,.toc-m a{color:var(--muted);text-decoration:none}
+.toc a:hover,.toc-m a:hover{color:var(--brand)}
+.toc-title{font-weight:600;font-size:14px}
+@media (min-width:1180px){
+.layout{display:flex;align-items:flex-start;gap:32px;padding:0 16px}
+.layout .doc{flex:1;min-width:0;margin:0}
+.toc-m{display:none}
+.toc{display:block;position:sticky;top:64px;flex:none;width:260px;max-height:calc(100vh - 88px);overflow:auto;margin-top:24px;padding-left:16px;border-left:1px solid var(--border);font-size:13px}
+}
 `
