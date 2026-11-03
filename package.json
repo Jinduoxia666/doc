@@ -3,17 +3,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_OPTIONS=--max-old-space-size=256 vitepress dev docs",
+    "dev": "NODE_OPTIONS='--max-old-space-size=256 --max-semi-space-size=1 --optimize-for-size' vitepress dev docs",
     "build": "vitepress build docs",
     "preview": "node scripts/serve.mjs",
     "serve": "vitepress build docs && node scripts/serve.mjs",
     "new": "node scripts/new.mjs",
     "share:list": "curl -s localhost:7788/dp/__share/api/shares | node -e \"for (const s of JSON.parse(require('fs').readFileSync(0))) console.log(s.path, s.url, s.password)\"",
     "passwd": "node scripts/passwd.mjs",
-    "content": "node scripts/content.mjs"
+    "content": "node scripts/content.mjs",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop doc",
+    "pm2:restart": "pm2 restart doc",
+    "pm2:up": "bash scripts/pm2-up.sh"
   },
   "devDependencies": {
     "mermaid": "^12.2.0",
+    "pm2": "^7.1.1",
     "vitepress": "^1.6.4"
   }
 }

@@ -1,6 +1,7 @@
 node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+.pm2/
 .DS_Store
 # 分享密码与签名密钥
 .shares.json

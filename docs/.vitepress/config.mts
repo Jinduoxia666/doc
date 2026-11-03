@@ -5,7 +5,7 @@ import { buildNav, buildSidebar, sections } from './sidebar.mts'
 import { BASE, sharePlugin } from './share.mjs'
 
 // dev 和 preview 固定同一端口，nginx 只需反代到 http://localhost:7788
-const PORT = 7788
+const PORT = Number(process.env.PORT || 7788)
 
 // 侧边栏只在加载配置时生成一次，新增/删除文档、改标题后不会刷新。
 // 监听分类目录下 .md 和子目录的变化，重新生成侧边栏写回站点配置，再热更新 /@siteData。
