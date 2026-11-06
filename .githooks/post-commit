@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eu
+root=$(cd "$(git rev-parse --absolute-git-dir)/.." && pwd)
+log="$HOME/Library/Logs/doc-sync-mini.log"
+mkdir -p "$(dirname "$log")"
+if /bin/bash "$root/scripts/sync-mini.sh" >>"$log" 2>&1; then
+  echo '[mini-100] 同步完成' >&2
+else
+  echo "[mini-100] commit 已完成，但同步失败。运行 npm run sync:mini 重试；日志：$log" >&2
+fi

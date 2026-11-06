@@ -14,7 +14,9 @@
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "pm2:stop": "pm2 stop doc",
     "pm2:restart": "pm2 restart doc",
-    "pm2:up": "bash scripts/pm2-up.sh"
+    "pm2:up": "bash scripts/pm2-up.sh",
+    "sync:mini": "bash scripts/sync-mini.sh",
+    "sync:install": "bash scripts/install-sync-hooks.sh"
   },
   "devDependencies": {
     "mermaid": "^12.2.0",

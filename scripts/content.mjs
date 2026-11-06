@@ -48,7 +48,7 @@ const commands = {
     const stamp = new Date().toLocaleString('sv-SE').slice(0, 16)
     if (!changed) return console.log(`[${stamp}] 没有改动`)
     const lines = changed.split('\n')
-    git(['commit', '--quiet', '-m', `${message || '每日快照'} ${stamp.slice(0, 10)}：${lines.length} 个文件`, '-m', changed])
+    git(['commit', '--quiet', '-m', `${message || '每日快照'} ${stamp.slice(0, 10)}：${lines.length} 个文件`, '-m', changed], { stdio: 'inherit' })
     console.log(`[${stamp}] 已提交 ${lines.length} 个文件\n${changed}`)
     if (git(['remote']).trim()) {
       try {

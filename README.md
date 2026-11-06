@@ -63,6 +63,28 @@ npm run content -- uninstall         # 卸载定时任务
 
 ## 通过 nginx 反代对外访问
 
+### 当前 `/dp` 部署与自动同步
+
+- 本机 `/Users/jdx/code/www/doc` 是编辑源，mini-100 的同路径运行文档站，dell 将 `/dp/` 转发到 `10.10.1.100:7788`。
+- 本机文档站已停止并禁用登录自启，日常编辑与提交同步无需启动本机服务。
+- 本机通过 Git `post-commit` 钩子触发同步：主仓库 `git commit`、个人文档仓库提交（包括 `npm run content -- commit` 和每日定时提交）成功后都会同步。不再每 15 秒轮询；没有产生新 commit 时不会自动同步。
+- commit 是同步触发点，同步范围仍是当前目录，包括尚未提交或被主仓库忽略的个人文档，新增、修改、删除都会同步。只在本机编辑文档，直接修改 mini-100 的文档会被下次同步覆盖。
+- 提交后会等待同步结果；断网或同步失败不回滚 commit，会提示查看日志并手动重试，也可等下一次 commit 再同步。
+- mini-100 的 launchd 服务 `com.jdx.doc` 托管 VitePress，退出后自动重启；Node 堆上限为 512MB，用户登录后加载。
+- `docs/`、站点代码、`site.json` 和 `.content.git/` 会同步；依赖变化自动执行 `npm ci`，脚本及部署配置变化自动重启服务，正文变化走热更新。
+- `.auth.json` 和 `.shares.json` 已在首次迁移时复制，日常同步排除它们。迁移后通过域名管理分享和登录密码；本机预览站的分享记录独立，不会上传。Git 主仓库、依赖、缓存和构建产物也不参与同步。
+
+```bash
+npm run sync:mini                  # 立即同步
+npm run sync:mini -- --dry-run      # 只查看待同步的改动
+npm run sync:install               # 安装/恢复本机两个仓库的提交钩子
+tail -50 ~/Library/Logs/doc-sync-mini.log
+ssh mini-100 'tail -50 ~/Library/Logs/doc.error.log'
+ssh mini-100 'launchctl kickstart -k gui/501/com.jdx.doc'
+```
+
+提交触发的同步日志在本机 `~/Library/Logs/doc-sync-mini.log`；同步通过 SSH 别名 `mini-100` 连接，要求免交互认证。钩子路径由本机 Git 配置指定，重新克隆仓库或重新初始化文档内容仓库后需要执行 `npm run sync:install`。以下是其他路径前缀的通用配置步骤。
+
 1. `site.json` 设置 `base`（如 `/zs`），启动服务
 2. 固定本机内网 IP，防火墙放行 7788 入站
 3. 在 nginx 站点中添加（`proxy_pass` 末尾不要加 `/`，要带着前缀转发）：
