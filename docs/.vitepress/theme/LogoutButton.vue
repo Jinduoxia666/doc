@@ -14,6 +14,21 @@ const logout = () => (location.href = withBase('/__logout'))
 </template>
 
 <style scoped>
-.logout { margin-left: 12px; padding: 2px 10px; font-size: 13px; color: var(--vp-c-text-2); border: 1px solid var(--vp-c-divider); border-radius: 999px; }
-.logout:hover { color: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); }
+.logout {
+  margin-left: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font: 600 13px/30px var(--vp-font-family-base);
+  cursor: pointer;
+}
+.logout:hover {
+  color: var(--vp-c-brand-1);
+  border-color: transparent;
+  background: var(--vp-c-brand-soft);
+}
+.logout:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
 </style>

@@ -1,3 +1,145 @@
+/* Ocean Depths（theme-factory）
+   Deep Navy #1a2332 · Teal #2d8b8b · Seafoam #a8dadc · Cream #f1faee
+   正文链接用加深后的青色，保证在奶油底上达到 WCAG AA。 */
+@font-face {
+  font-family: "DejaVu Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/dejavu-sans-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DejaVu Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/dejavu-sans-700.woff2") format("woff2");
+}
+
+:root {
+  /* 和语雀一样铺满窗口，不再在 1440px 处把整页居中缩进去 */
+  --vp-layout-max-width: 100vw;
+
+  --vp-font-family-base: "DejaVu Sans", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --vp-c-bg: #f1faee;
+  --vp-c-bg-alt: #e4f2ef;
+  --vp-c-bg-elv: #f7fcf8;
+  --vp-c-bg-soft: #eaf6f3;
+
+  --vp-c-text-1: #1a2332;
+  --vp-c-text-2: #3a4a5c;
+  --vp-c-text-3: #5c6d7c;
+
+  --vp-c-border: #b7d4d2;
+  --vp-c-divider: #d3e6e4;
+  --vp-c-gutter: #d3e6e4;
+
+  --vp-c-gray-1: #c5ddd8;
+  --vp-c-gray-2: #d7ebe7;
+  --vp-c-gray-3: #e4f3ef;
+  --vp-c-gray-soft: rgba(45, 139, 139, 0.14);
+
+  --vp-c-brand-1: #1b6363;
+  --vp-c-brand-2: #206e6e;
+  --vp-c-brand-3: #267a7a;
+  --vp-c-brand-soft: rgba(45, 139, 139, 0.16);
+
+  --vp-button-brand-text: #1a2332;
+  --vp-button-brand-bg: #a8dadc;
+  --vp-button-brand-hover-text: #1a2332;
+  --vp-button-brand-hover-bg: #c5e8ea;
+  --vp-button-brand-active-text: #f1faee;
+  --vp-button-brand-active-bg: #206e6e;
+  --vp-button-alt-border: #b7d4d2;
+  --vp-button-alt-text: #1a2332;
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-hover-border: transparent;
+  --vp-button-alt-hover-text: #1b6363;
+  --vp-button-alt-hover-bg: rgba(45, 139, 139, 0.16);
+  --vp-button-alt-active-border: transparent;
+  --vp-button-alt-active-text: #f1faee;
+  --vp-button-alt-active-bg: #206e6e;
+
+  --vp-home-hero-name-color: #1a2332;
+}
+
+:root:where(:lang(zh)) {
+  --vp-font-family-base: "Punctuation SC", "DejaVu Sans", ui-sans-serif, system-ui,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+}
+
+.dark {
+  --vp-c-bg: #1a2332;
+  --vp-c-bg-alt: #141c28;
+  --vp-c-bg-elv: #243044;
+  --vp-c-bg-soft: #1e2a3a;
+
+  --vp-c-text-1: #f1faee;
+  --vp-c-text-2: #c5ddd8;
+  --vp-c-text-3: #8eaaa8;
+
+  --vp-c-border: #34525a;
+  --vp-c-divider: #2c4250;
+  --vp-c-gutter: #0e141c;
+
+  --vp-c-gray-1: #3d5560;
+  --vp-c-gray-2: #2c4250;
+  --vp-c-gray-3: #243646;
+  --vp-c-gray-soft: rgba(168, 218, 220, 0.14);
+
+  --vp-c-brand-1: #a8dadc;
+  --vp-c-brand-2: #8ecfd1;
+  --vp-c-brand-3: #2d8b8b;
+  --vp-c-brand-soft: rgba(168, 218, 220, 0.16);
+
+  --vp-button-brand-text: #1a2332;
+  --vp-button-brand-bg: #a8dadc;
+  --vp-button-brand-hover-text: #1a2332;
+  --vp-button-brand-hover-bg: #c5e8ea;
+  --vp-button-brand-active-text: #f1faee;
+  --vp-button-brand-active-bg: #2d8b8b;
+  --vp-button-alt-border: #34525a;
+  --vp-button-alt-text: #f1faee;
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-hover-border: transparent;
+  --vp-button-alt-hover-text: #a8dadc;
+  --vp-button-alt-hover-bg: rgba(168, 218, 220, 0.16);
+  --vp-button-alt-active-border: transparent;
+  --vp-button-alt-active-text: #f1faee;
+  --vp-button-alt-active-bg: #2d8b8b;
+
+  --vp-home-hero-name-color: #f1faee;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4,
+.vp-doc h5,
+.vp-doc h6,
+.VPNavBarTitle .title,
+.VPHero .name,
+.VPHero .text,
+.VPFeature .title {
+  font-weight: 700;
+}
+
+.VPHero .tagline {
+  color: #2d8b8b;
+}
+
+.dark .VPHero .tagline {
+  color: #a8dadc;
+}
+
+::selection {
+  background: rgba(45, 139, 139, 0.28);
+}
+
 /* 文档里用 {.unresolved} 标记未解决事项 */
 .unresolved,
 .unresolved strong {
@@ -27,4 +169,184 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* 文档标题下方的创建日期 */
+.VPSidebarItem .sb-title,
+.VPSidebarItem .sb-date {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.VPSidebarItem .sb-date {
+  margin-top: -2px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--vp-c-text-3);
+}
+
+/* 语雀正文列是 750px，在左侧目录右侧留白里居中，不把段落拉满。 */
+#VPContent .VPDoc.has-aside .content .content-container {
+  max-width: 750px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* 菜单和按钮：8px 圆角。主按钮是海沫底海军字，次按钮是透明描边，悬停铺一层浅青。 */
+.VPHero .VPButton.medium {
+  border-radius: 8px;
+  padding: 0 16px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.VPHero .VPButton.big {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.VPNavBar .VPNavBarMenu {
+  gap: 2px;
+}
+
+.VPNavBar .VPNavBarMenu .VPNavBarMenuLink {
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: 8px;
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.VPNavBar .VPNavBarMenu .VPNavBarMenuLink:hover {
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
+}
+
+.VPNavBar .VPNavBarMenu .VPNavBarMenuLink.active {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  font-weight: 600;
+}
+
+.VPNavBar .VPNavBarMenu .VPNavBarMenuLink:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .VPNavBar .DocSearch-Button {
+    height: 32px;
+    border: 1px solid var(--vp-c-border);
+    border-radius: 8px;
+    background: transparent;
+  }
+
+  .VPNavBar .DocSearch-Button:hover {
+    border-color: transparent;
+    background: var(--vp-c-brand-soft);
+  }
+
+  .VPNavBar .DocSearch-Button:hover .DocSearch-Button-Placeholder,
+  .VPNavBar .DocSearch-Button:hover .DocSearch-Search-Icon {
+    color: var(--vp-c-brand-1);
+  }
+}
+
+.VPNavBar .DocSearch-Button .DocSearch-Button-Key,
+.VPNavBar .DocSearch-Button .DocSearch-Button-Key + .DocSearch-Button-Key {
+  margin: 0 0 0 2px;
+  border: 0;
+  border-radius: 4px;
+  padding: 0 5px;
+  height: 20px;
+  line-height: 20px;
+  background: var(--vp-c-bg-soft);
+}
+
+.VPNavScreen .VPNavScreenMenu .VPNavScreenMenuLink {
+  margin: 4px 0;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.VPNavScreen .VPNavScreenMenu .VPNavScreenMenuLink:hover {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.VPLocalNav button.menu,
+.VPLocalNav .VPLocalNavOutlineDropdown button {
+  height: 32px;
+  margin: 8px 16px;
+  padding: 0 12px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 30px;
+  color: var(--vp-c-text-2);
+}
+
+.VPLocalNav .VPLocalNavOutlineDropdown {
+  padding: 0;
+}
+
+.VPLocalNav button.menu:hover,
+.VPLocalNav .VPLocalNavOutlineDropdown button:hover,
+.VPLocalNav .VPLocalNavOutlineDropdown button.open {
+  color: var(--vp-c-brand-1);
+  border-color: transparent;
+  background: var(--vp-c-brand-soft);
+}
+
+#VPSidebarNav .VPSidebarItem.level-1 > .item > .text {
+  padding-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3);
+}
+
+#VPSidebarNav .VPSidebarItem .indicator {
+  display: none;
+}
+
+#VPSidebarNav .VPSidebarItem:not(.level-0) > .item > .link {
+  margin: 1px 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+#VPSidebarNav .VPSidebarItem:not(.level-0) > .item > .link:hover {
+  background: var(--vp-c-bg-soft);
+}
+
+#VPSidebarNav .VPSidebarItem.level-0 > .item > .link,
+#VPSidebarNav .VPSidebarItem.level-0 > .item > .link:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+#VPSidebarNav .VPSidebarItem.level-0.is-active > .item > .link > .text,
+#VPSidebarNav .VPSidebarItem.level-0.has-active > .item > .link > .text {
+  color: var(--vp-c-text-1);
+}
+
+#VPSidebarNav .VPSidebarItem:not(.level-0).is-active > .item > .link,
+#VPSidebarNav .VPSidebarItem:not(.level-0).is-active > .item > .link:hover {
+  background: var(--vp-c-brand-soft);
+  box-shadow: inset 2px 0 0 var(--vp-c-brand-1);
+}
+
+#VPSidebarNav .VPSidebarItem > .item > .link:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 1px;
 }

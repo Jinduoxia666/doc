@@ -84,21 +84,21 @@ watch(() => page.value.relativePath, () => {
 
 <template>
   <div class="share">
-    <button class="share-toggle" @click="toggle">
+    <button class="share-toggle" :class="{ on: share?.shared }" @click="toggle">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
       分享{{ share?.shared ? '中' : '' }}
     </button>
     <div v-if="open" class="share-panel">
       <p v-if="error" class="share-error">{{ error }}</p>
       <template v-else-if="share?.shared">
-        <div class="row"><span>链接</span><code>{{ share.url }}</code><button @click="copy('url', share.url!)">{{ copied === 'url' ? '已复制' : '复制' }}</button></div>
+        <div class="row"><span>链接</span><code>{{ share.url }}</code><button class="btn" @click="copy('url', share.url!)">{{ copied === 'url' ? '已复制' : '复制' }}</button></div>
         <div v-if="share.public" class="row"><span>密码</span><span class="muted">公开，无需密码</span></div>
-        <div v-else class="row"><span>密码</span><code>{{ share.password }}</code><button @click="copy('pw', share.password!)">{{ copied === 'pw' ? '已复制' : '复制' }}</button></div>
+        <div v-else class="row"><span>密码</span><code>{{ share.password }}</code><button class="btn" @click="copy('pw', share.password!)">{{ copied === 'pw' ? '已复制' : '复制' }}</button></div>
         <div class="row actions">
-          <button v-if="!share.public" @click="copy('all', `${share.url}\n访问密码：${share.password}`)">{{ copied === 'all' ? '已复制' : '复制链接和密码' }}</button>
-          <button v-if="!share.public" :disabled="busy" @click="reset">重置密码</button>
-          <button :disabled="busy" @click="setPublic(!share.public)">{{ share.public ? '恢复密码访问' : '设为公开' }}</button>
-          <button :disabled="busy" class="danger" @click="revoke">取消分享</button>
+          <button v-if="!share.public" class="btn" @click="copy('all', `${share.url}\n访问密码：${share.password}`)">{{ copied === 'all' ? '已复制' : '复制链接和密码' }}</button>
+          <button v-if="!share.public" class="btn" :disabled="busy" @click="reset">重置密码</button>
+          <button class="btn" :disabled="busy" @click="setPublic(!share.public)">{{ share.public ? '恢复密码访问' : '设为公开' }}</button>
+          <button class="btn danger" :disabled="busy" @click="revoke">取消分享</button>
         </div>
       </template>
       <template v-else-if="share">
@@ -112,17 +112,41 @@ watch(() => page.value.relativePath, () => {
 
 <style scoped>
 .share { position: relative; display: flex; justify-content: flex-end; margin-bottom: 8px; }
-.share-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; font-size: 13px; color: var(--vp-c-text-2); border: 1px solid var(--vp-c-divider); border-radius: 999px; }
-.share-toggle:hover { color: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); }
-.share-panel { position: absolute; top: 34px; right: 0; z-index: 20; width: min(440px, calc(100vw - 32px)); padding: 14px 16px; background: var(--vp-c-bg-elv); border: 1px solid var(--vp-c-divider); border-radius: 12px; box-shadow: var(--vp-shadow-3); font-size: 14px; }
+button { font-family: inherit; cursor: pointer; }
+.share-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.share-toggle:hover,
+.share-toggle.on {
+  color: var(--vp-c-brand-1);
+  border-color: transparent;
+  background: var(--vp-c-brand-soft);
+}
+.share-toggle:focus-visible,
+.btn:focus-visible,
+.primary:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.share-panel { position: absolute; top: 40px; right: 0; z-index: 20; width: min(440px, calc(100vw - 32px)); padding: 14px 16px; background: var(--vp-c-bg-elv); border: 1px solid var(--vp-c-divider); border-radius: 12px; box-shadow: var(--vp-shadow-3); font-size: 14px; }
 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .row > span { flex: none; color: var(--vp-c-text-2); }
 .row code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row button, .primary { flex: none; padding: 2px 10px; font-size: 13px; border: 1px solid var(--vp-c-divider); border-radius: 6px; }
-.row button:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.btn, .primary { flex: none; height: 28px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+.btn { border: 1px solid var(--vp-c-border); background: transparent; color: var(--vp-c-text-2); }
+.btn:hover { color: var(--vp-c-brand-1); border-color: transparent; background: var(--vp-c-brand-soft); }
 .actions { flex-wrap: wrap; margin: 12px 0 0; }
-.primary { background: var(--vp-c-brand-3); color: var(--vp-c-white); border-color: transparent; padding: 4px 14px; }
-.danger:hover { color: var(--vp-c-danger-1) !important; border-color: var(--vp-c-danger-1) !important; }
+.primary { border: 0; padding: 0 14px; background: #a8dadc; color: #1a2332; }
+.primary:hover { background: #c5e8ea; }
+.primary:active { background: #206e6e; color: #f1faee; }
+.danger:hover { color: var(--vp-c-danger-1); border-color: transparent; background: var(--vp-c-danger-soft); }
 .muted { flex: 1; color: var(--vp-c-text-2); }
 .hint { margin: 0 0 12px; color: var(--vp-c-text-2); }
 .share-error { margin: 0; color: var(--vp-c-danger-1); }

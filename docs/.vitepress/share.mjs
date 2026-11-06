@@ -234,16 +234,75 @@ function mermaidScript() {
 </script>`
 }
 
+function tocTree(items) {
+  const root = []
+  let parent = null
+  for (const item of items) {
+    if (item.level <= 2 || !parent) {
+      parent = { ...item, children: [] }
+      root.push(parent)
+    } else parent.children.push({ ...item, children: [] })
+  }
+  return root
+}
+
+function tocList(nodes, nested) {
+  const lis = nodes.map((n) => `<li><a class="outline-link" href="#${n.id}">${n.text}</a>${n.children?.length ? tocList(n.children, true) : ''}</li>`).join('')
+  return `<ul class="${nested ? 'nested' : 'root'}">${lis}</ul>`
+}
+
+// 和站内 VPDocAsideOutline 一样：右侧 224px，当前标题有一根青色标记
+function outlineScript() {
+  return `<script>
+(() => {
+  const nav = document.querySelector('.toc')
+  if (!nav) return
+  const marker = nav.querySelector('.outline-marker')
+  const heads = [...nav.querySelectorAll('a.outline-link')].flatMap((a) => {
+    const el = document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)))
+    return el ? [{ a, el }] : []
+  })
+  let prev = null
+  const activate = (a) => {
+    if (prev) prev.classList.remove('active')
+    prev = a
+    if (!a) { marker.style.opacity = '0'; return }
+    a.classList.add('active')
+    marker.style.top = (a.offsetTop + 39) + 'px'
+    marker.style.opacity = '1'
+  }
+  const tick = () => {
+    const y = window.scrollY
+    const atBottom = Math.abs(y + innerHeight - document.body.offsetHeight) < 1
+    if (y < 1 || !heads.length) return activate(null)
+    if (atBottom) return activate(heads[heads.length - 1].a)
+    let active = null
+    for (const h of heads) {
+      if (h.el.getBoundingClientRect().top + y > y + 112 + 4) break
+      active = h.a
+    }
+    activate(active)
+  }
+  tick()
+  window.addEventListener('scroll', tick, { passive: true })
+  window.addEventListener('resize', tick)
+})()
+</script>`
+}
+
 function docPage({ title, html, toc, mermaid }) {
-  const list = toc.map((t) => `<li class="l${t.level}"><a href="#${t.id}">${t.text}</a></li>`).join('')
+  const tree = tocTree(toc)
+  const list = tocList(tree, false)
   const nav = toc.length >= 2
-    ? `<details class="toc-m"><summary>本页目录</summary><ul>${list}</ul></details>`
+    ? `<details class="toc-m"><summary>本页目录</summary>${list}</details>`
     : ''
-  const aside = toc.length >= 2 ? `<nav class="toc"><div class="toc-title">本页目录</div><ul>${list}</ul></nav>` : ''
+  const aside = toc.length >= 2
+    ? `<nav class="toc" aria-labelledby="doc-outline-aria-label"><div class="content"><div class="outline-marker"></div><div class="outline-title" id="doc-outline-aria-label">本页目录</div>${list}</div></nav>`
+    : ''
   return page(
     title,
     `<header class="bar"><img src="${BASE}/favicon.svg" alt="" width="24" height="24"><span>${esc(title)}</span><span class="tag">分享文档</span></header>
-<div class="layout"><main class="doc">${nav}${html}</main>${aside}</div>${mermaid ? mermaidScript() : ''}`,
+<div class="layout"><main class="doc">${nav}${html}</main>${aside}</div>${toc.length >= 2 ? outlineScript() : ''}${mermaid ? mermaidScript() : ''}`,
   )
 }
 
@@ -447,21 +506,23 @@ export function sharePlugin() {
 }
 
 const CSS = `
-:root{--bg:#fff;--fg:#213547;--muted:#67676c;--border:#e2e2e3;--soft:#f6f6f7;--brand:#3451b2;--code:#f6f6f7;--err:#c62828}
-@media (prefers-color-scheme:dark){:root{--bg:#1b1b1f;--fg:#dfdfd6;--muted:#98989f;--border:#3c3f44;--soft:#202127;--brand:#a8b1ff;--code:#161618;--err:#f66}}
+:root{--bg:#f1faee;--fg:#1a2332;--muted:#3a4a5c;--border:#d3e6e4;--soft:#e4f2ef;--brand:#1b6363;--code:#e4f2ef;--err:#b8272c}
+@media (prefers-color-scheme:dark){:root{--bg:#1a2332;--fg:#f1faee;--muted:#c5ddd8;--border:#34525a;--soft:#1e2a3a;--brand:#a8dadc;--code:#141c28;--err:#f66f81}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 "DejaVu Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
 .login{max-width:360px;margin:18vh auto 0;padding:0 16px;text-align:center}
 .login h1{font-size:20px;margin:16px 0 4px}
 .muted{color:var(--muted);margin:0 0 24px}
 .login form{display:flex;gap:8px}
 .login input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--soft);color:var(--fg);font-size:15px}
 .login input:focus{outline:2px solid var(--brand);border-color:transparent}
-.login button{padding:10px 18px;border:0;border-radius:8px;background:var(--brand);color:#fff;font-size:15px;cursor:pointer}
+.login button{padding:0 16px;height:36px;border:0;border-radius:8px;background:#a8dadc;color:#1a2332;font-size:14px;font-weight:600;cursor:pointer}
+.login button:hover{background:#c5e8ea}
+.login button:active{background:#206e6e;color:#f1faee}
 .error{color:var(--err);margin-top:12px}
 .bar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);font-weight:600;z-index:1}
-.bar .tag{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:1px 10px;white-space:nowrap}
-.doc{max-width:860px;margin:0 auto;padding:24px 16px 80px;overflow-wrap:anywhere}
+.bar .tag{margin-left:auto;font-size:12px;font-weight:600;color:var(--brand);border:0;border-radius:8px;padding:4px 10px;background:color-mix(in srgb,var(--brand) 16%,transparent);white-space:nowrap}
+.doc{max-width:750px;margin:0 auto;padding:32px 16px 96px;overflow-wrap:anywhere}
 .doc h1{font-size:30px;line-height:1.3;margin:8px 0 16px}
 .doc h2{font-size:23px;margin:40px 0 16px;padding-top:24px;border-top:1px solid var(--border)}
 .doc h3{font-size:19px;margin:28px 0 12px}
@@ -484,20 +545,28 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,B
 .doc .mermaid-block{margin:16px 0;overflow-x:auto;text-align:center}
 .doc .mermaid-block foreignObject p,.doc .mermaid-block foreignObject div,.doc .mermaid-block foreignObject span{margin:0;line-height:1.5}
 .doc [id]{scroll-margin-top:64px}
-.layout{max-width:1200px;margin:0 auto}
+.layout{max-width:none;margin:0}
 .toc{display:none}
+.toc .content{position:relative;border-left:1px solid var(--border);padding-left:16px;font-size:13px;font-weight:500}
+.toc .outline-marker{position:absolute;top:32px;left:-1px;z-index:0;opacity:0;width:2px;height:18px;border-radius:2px;background:var(--brand);transition:top .25s cubic-bezier(0,1,.5,1),opacity .25s}
+.toc .outline-title{line-height:32px;font-size:14px;font-weight:600;color:var(--fg)}
+.toc ul{list-style:none;margin:0;padding:0}
+.toc ul.root{position:relative;z-index:1}
+.toc ul.nested{padding:0 16px}
+.toc a.outline-link{display:block;line-height:32px;font-size:14px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;transition:color .5s}
+.toc a.outline-link:hover,.toc a.outline-link.active{color:var(--fg);transition:color .25s}
 .toc-m{margin:0 0 16px;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px}
 .toc-m summary{cursor:pointer;font-weight:600}
-.toc ul,.toc-m ul{list-style:none;margin:6px 0 0;padding:0}
-.toc li,.toc-m li{margin:4px 0;line-height:1.5}
-.toc li.l3,.toc-m li.l3{padding-left:14px}
-.toc a,.toc-m a{color:var(--muted);text-decoration:none}
-.toc a:hover,.toc-m a:hover{color:var(--brand)}
-.toc-title{font-weight:600;font-size:14px}
-@media (min-width:1180px){
-.layout{display:flex;align-items:flex-start;gap:32px;padding:0 16px}
-.layout .doc{flex:1;min-width:0;margin:0}
+.toc-m ul{list-style:none;margin:6px 0 0;padding:0}
+.toc-m li{margin:4px 0;line-height:1.5}
+.toc-m ul.nested{padding-left:14px}
+.toc-m a{color:var(--muted);text-decoration:none}
+.toc-m a:hover{color:var(--brand)}
+@media (min-width:1280px){
+.layout{padding:0}
+.doc{width:750px;padding:32px 0 96px}
 .toc-m{display:none}
-.toc{display:block;position:sticky;top:64px;flex:none;width:260px;max-height:calc(100vh - 88px);overflow:auto;margin-top:24px;padding-left:16px;border-left:1px solid var(--border);font-size:13px}
+.toc{display:block;position:fixed;top:112px;left:calc(100% - 256px);width:224px;max-height:calc(100vh - 144px);overflow:auto;scrollbar-width:none;margin:0;padding:0;border:0}
+.toc::-webkit-scrollbar{display:none}
 }
 `
